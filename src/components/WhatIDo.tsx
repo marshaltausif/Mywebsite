@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import "./styles/WhatIDo.css";
+import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const WhatIDo = () => {
@@ -10,24 +11,41 @@ const WhatIDo = () => {
   };
 
   useEffect(() => {
+    // ✅ REGISTER ScrollTrigger (VERY IMPORTANT)
+    gsap.registerPlugin(ScrollTrigger);
+
     const handlers: any[] = [];
 
     containerRef.current.forEach((container) => {
       if (!container) return;
 
-      // 🔥 FIX: remove what-noTouch for proper behavior
+      // 🔥 Remove noTouch class
       container.classList.remove("what-noTouch");
 
+      // ✅ CLICK HANDLER
       const handler = () => handleClick(container);
       handlers.push({ container, handler });
-
       container.addEventListener("click", handler);
+
+      // ✅ USE ScrollTrigger (THIS FIXES ERROR + ADDS ANIMATION)
+      gsap.from(container, {
+        scrollTrigger: {
+          trigger: container,
+          start: "top 80%",
+        },
+        opacity: 0,
+        y: 50,
+        duration: 1,
+      });
     });
 
     return () => {
       handlers.forEach(({ container, handler }) => {
         container.removeEventListener("click", handler);
       });
+
+      // cleanup ScrollTriggers
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, []);
 
